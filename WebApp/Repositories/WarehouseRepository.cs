@@ -1,11 +1,10 @@
 using System.Data.SqlClient;
-using WebApp.Models;
 
 namespace WebApp.Repositories;
 
 public class WarehouseRepository : IWarehouseRepository
 {
-    private IConfiguration _configuration;
+    private readonly IConfiguration _configuration;
 
     public WarehouseRepository(IConfiguration configuration)
     {

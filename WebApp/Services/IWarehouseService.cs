@@ -5,5 +5,5 @@ namespace WebApp.Services;
 
 public interface IWarehouseService
 {
-    ProductWarehouse? AddStock(RegisterProductInWarehouseRequestDTO request);
+    public Task <ProductWarehouse?> AddStock(RegisterProductInWarehouseRequestDTO request);
 }

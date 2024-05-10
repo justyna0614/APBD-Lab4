@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using WebApp.DTO;
-using System.Data.SqlClient;
 using WebApp.Exceptions;
 using WebApp.Services;
 
@@ -10,18 +9,16 @@ namespace WebApp.Controllers;
 [ApiController]
 public class WarehouseController : ControllerBase
 {
-    private IConfiguration _configuration;
-    private IWarehouseService _warehouseService;
+    private readonly IWarehouseService _warehouseService;
 
 
-    public WarehouseController(IConfiguration configuration, IWarehouseService warehouseService)
+    public WarehouseController(IWarehouseService warehouseService)
     {
-        _configuration = configuration;
         _warehouseService = warehouseService;
     }
-    
+
     [HttpPost]
-    public IActionResult RegisterProductInWarehouse([FromBody] RegisterProductInWarehouseRequestDTO registerProductInWarehouseRequestDto)
+    public async Task <IActionResult> RegisterProductInWarehouse([FromBody] RegisterProductInWarehouseRequestDTO registerProductInWarehouseRequestDto)
     {
         if (!ModelState.IsValid)
         {
@@ -30,7 +27,7 @@ public class WarehouseController : ControllerBase
 
         try
         {
-            var productWarehouse = _warehouseService.AddStock(registerProductInWarehouseRequestDto);
+            var productWarehouse = await _warehouseService.AddStock(registerProductInWarehouseRequestDto);
             return productWarehouse != null
                 ? StatusCode(StatusCodes.Status200OK, new RegisterProductInWarehouseResponseDTO(productWarehouse.IdProductWarehouse))
                 : StatusCode(StatusCodes.Status500InternalServerError, "Error while adding product to warehouse");
@@ -60,4 +57,5 @@ public class WarehouseController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
+    
 }

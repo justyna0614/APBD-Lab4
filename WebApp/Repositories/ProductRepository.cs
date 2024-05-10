@@ -5,26 +5,26 @@ namespace WebApp.Repositories;
 
 public class ProductRepository : IProductRepository
 {
-    private IConfiguration _configuration;
+    private readonly IConfiguration _configuration;
 
     public ProductRepository(IConfiguration configuration)
     {
         _configuration = configuration;
     }
 
-    public Product? FetchProductById(int id)
+    public async Task <Product?> FetchProductByIdAsync(int id)
     {
-        using var connection = new SqlConnection(
+         await using var connection = new SqlConnection(
             _configuration.GetConnectionString("DefaultConnection")
         );
-        connection.Open();
+        connection.OpenAsync();
 
         var command = new SqlCommand($"SELECT * FROM Product WHERE IdProduct = {id}", connection);
         //TO DO: Co jeśli nie znajdzie produktu o podanym Id w bazie? Tutaj wywalamy błąd?
-        using var reader = command.ExecuteReader();
+        var reader = await command.ExecuteReaderAsync();
         var product = new Product();
 
-        if (!reader.Read()) return null;
+        if (!await reader.ReadAsync()) return null;
         product.IdProduct = (int)reader["IdProduct"];
         product.Name = reader["Name"].ToString()!;
         product.Description = reader["Description"].ToString()!;
@@ -34,14 +34,14 @@ public class ProductRepository : IProductRepository
 
     }
     
-    public decimal FetchPriceById(int id)
+    public async Task <decimal> FetchPriceByIdAsync(int id)
     {
-        using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        connection.Open();
+        await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await connection.OpenAsync();
 
-        using var command = new SqlCommand($"SELECT Price FROM Product WHERE IdProduct = {id}", connection);
-        using var reader = command.ExecuteReader();
-        if (!reader.Read()) return 0;
+        await using var command = new SqlCommand($"SELECT Price FROM Product WHERE IdProduct = {id}", connection);
+        var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return 0;
         return (decimal)reader["Price"];
     }
 }

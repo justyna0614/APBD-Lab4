@@ -4,7 +4,7 @@ namespace WebApp.Repositories;
 
 public interface IProductRepository
 {
-    Product? FetchProductById(int id);
+    public Task <Product?> FetchProductByIdAsync(int id);
     
-    decimal FetchPriceById(int id);
+    public Task <decimal> FetchPriceByIdAsync(int id);
 }

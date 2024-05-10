@@ -6,36 +6,33 @@ namespace WebApp.Repositories;
 
 public class ProductWarehouseRepository : IProductWarehouseRepository
 {
-    IConfiguration _configuration;
-    private IProductRepository _productRepository;
-    private IOrderRepository _orderRepository;
+    private readonly IConfiguration _configuration;
 
-    public ProductWarehouseRepository(IConfiguration configuration, IProductRepository productRepository, IOrderRepository orderRepository)
+
+    public ProductWarehouseRepository(IConfiguration configuration)
     {
         _configuration = configuration;
-        _productRepository = productRepository;
-        _orderRepository = orderRepository;
     }
 
 
-    public bool OrderHasBennCompleted(int idOrder)
+    public async Task <bool> OrderHasBennCompletedAsync(int idOrder)
     {
-        using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        connection.Open();
+        await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await connection.OpenAsync();
 
-        var command = new SqlCommand($"SELECT * FROM Product_Warehouse WHERE IdOrder = {idOrder}", connection);
+        await using var command = new SqlCommand($"SELECT * FROM Product_Warehouse WHERE IdOrder = {idOrder}", connection);
 
-        using var reader = command.ExecuteReader();
+        var reader = await command.ExecuteReaderAsync();
         return reader.HasRows;
     }
 
 
-    public int? AddProductToWarehouse(ProductWarehouse productWarehouse)
+    public async Task <int?> AddProductToWarehouseAsync(ProductWarehouse productWarehouse)
     {
-        using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        connection.Open();
+        await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await connection.OpenAsync();
 
-        using var command =
+        await using var command =
             new SqlCommand("INSERT INTO Product_Warehouse (IdWarehouse, IdProduct, IdOrder, Amount, Price, CreatedAt) " +
                            "VALUES (@IdWarehouse, @IdProduct, @IdOrder, @Amount, @Price, @CreatedAt); SELECT SCOPE_IDENTITY()", connection);
         command.Parameters.AddWithValue("@Amount", productWarehouse.Amount);
@@ -45,7 +42,7 @@ public class ProductWarehouseRepository : IProductWarehouseRepository
         command.Parameters.AddWithValue("@IdOrder", productWarehouse.IdOrder);
         command.Parameters.AddWithValue("@CreatedAt", productWarehouse.CreatedAt);
 
-        var rows = command.ExecuteNonQuery();
+        var rows = await command.ExecuteNonQueryAsync();
 
         if (rows > 0)
         {

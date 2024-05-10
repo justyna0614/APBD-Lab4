@@ -23,27 +23,27 @@ public class WarehouseService : IWarehouseService
         _orderService = orderService;
     }
 
-    public ProductWarehouse? AddStock(RegisterProductInWarehouseRequestDTO request)
+    public async Task <ProductWarehouse?> AddStock(RegisterProductInWarehouseRequestDTO request)
     {
         if (_warehouseRepository.ExistById(request.IdWarehouse) == false)
             throw new WarehouseNotFoundException($"Warehouse with id: {request.IdWarehouse} could not be found");
 
-        if (_productRepository.FetchProductById(request.IdProduct) == null)
+        if (await _productRepository.FetchProductByIdAsync(request.IdProduct) == null)
             throw new ProductNotFoundException($"Product with id: {request.IdProduct} could not be found");
 
         if (request.Amount <= 0)
             throw new IncorectAmountException("Amount must be greater than 0");
 
-        var order = _orderRepository.FetchOrderByProductAmountDate(request.IdProduct, request.Amount, request.CreatedAt);
+        var order = await _orderRepository.FetchOrderByProductAmountDateAsync(request.IdProduct, request.Amount, request.CreatedAt);
         if (order == null)
             throw new OrderNotFoundException("Order could not be found");
 
-        if (_productWarehouseRepository.OrderHasBennCompleted(order.IdOrder))
+        if (await _productWarehouseRepository.OrderHasBennCompletedAsync(order.IdOrder))
             throw new OrderCompletedException($"Order with id: {order.IdOrder} has been completed");
 
         _orderService.UpdateFulfilledDate(order.IdOrder);
 
-        var price = _productRepository.FetchPriceById(request.IdProduct) * request.Amount;
+        var price = await _productRepository.FetchPriceByIdAsync(request.IdProduct) * request.Amount;
 
         var warehouseProduct = new ProductWarehouse();
         warehouseProduct.IdProduct = request.IdProduct;
@@ -53,7 +53,7 @@ public class WarehouseService : IWarehouseService
         warehouseProduct.Price = price;
         warehouseProduct.CreatedAt = request.CreatedAt;
 
-        var id = _productWarehouseRepository.AddProductToWarehouse(warehouseProduct);
+        var id = await _productWarehouseRepository.AddProductToWarehouseAsync(warehouseProduct);
         if (id == null)
         {
             return null;
@@ -62,4 +62,10 @@ public class WarehouseService : IWarehouseService
         warehouseProduct.IdProductWarehouse = id.Value;
         return warehouseProduct;
     }
+
+    // public ProductWarehouse? AddStockWithProcedure(RegisterProductInWarehouseRequestDTO request)
+    // {
+    //     
+    // }
+
 }

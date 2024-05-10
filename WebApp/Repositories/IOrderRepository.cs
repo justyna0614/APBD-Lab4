@@ -1,13 +1,10 @@
-using WebApp.DTO;
 using WebApp.Models;
 
 namespace WebApp.Repositories;
 
 public interface IOrderRepository
 {
-    bool ExsistOrderOfProduct(RegisterProductInWarehouseRequestDTO request);
-    Order? FetchOrderByProductAmountDate(int idProduct, int amount, DateTime createdAt);
-    Order? FetchOrderById(int idOrder);
+    public Task <Order?> FetchOrderByProductAmountDateAsync(int idProduct, int amount, DateTime createdAt);
     
-    bool UpdateOrderFulfilledAt(int orderId, DateTime fulfilledAt);
+    public bool UpdateOrderFulfilledAt(int orderId, DateTime fulfilledAt);
 }

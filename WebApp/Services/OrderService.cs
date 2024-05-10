@@ -14,9 +14,9 @@ public class OrderService : IOrderService
         _productWarehouseRepository = productWarehouseRepository;
     }
 
-    public void UpdateFulfilledDate(int idOrder)
+    public async void UpdateFulfilledDate(int idOrder)
     {
-        if (!_productWarehouseRepository.OrderHasBennCompleted(idOrder))
+        if (!await _productWarehouseRepository.OrderHasBennCompletedAsync(idOrder))
         {
             _orderRepository.UpdateOrderFulfilledAt(idOrder, DateTime.Now);
         }

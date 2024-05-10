@@ -1,11 +1,10 @@
-using WebApp.DTO;
 using WebApp.Models;
 
 namespace WebApp.Repositories;
 
 public interface IProductWarehouseRepository
 {
-    bool OrderHasBennCompleted(int idOrder);
+    public Task <bool> OrderHasBennCompletedAsync(int idOrder);
     
-    int? AddProductToWarehouse(ProductWarehouse productWarehouse);
+    public Task <int?> AddProductToWarehouseAsync(ProductWarehouse productWarehouse);
 }
