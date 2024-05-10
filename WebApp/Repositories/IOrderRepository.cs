@@ -6,5 +6,5 @@ public interface IOrderRepository
 {
     public Task <Order?> FetchOrderByProductAmountDateAsync(int idProduct, int amount, DateTime createdAt);
     
-    public bool UpdateOrderFulfilledAt(int orderId, DateTime fulfilledAt);
+    public Task<bool> UpdateOrderFulfilledAtAsync(int orderId, DateTime fulfilledAt);
 }

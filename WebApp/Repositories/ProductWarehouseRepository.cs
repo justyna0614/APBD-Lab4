@@ -22,7 +22,7 @@ public class ProductWarehouseRepository : IProductWarehouseRepository
 
         await using var command = new SqlCommand($"SELECT * FROM Product_Warehouse WHERE IdOrder = {idOrder}", connection);
 
-        var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync();
         return reader.HasRows;
     }
 

@@ -2,5 +2,5 @@ namespace WebApp.Repositories;
 
 public interface IWarehouseRepository
 {
-    public bool ExistById(int id);
+    public Task<bool> ExistById(int id);
 }

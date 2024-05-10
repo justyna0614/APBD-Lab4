@@ -11,15 +11,15 @@ public class WarehouseRepository : IWarehouseRepository
         _configuration = configuration;
     }
 
-    public bool ExistById(int id)
+    public async Task<bool> ExistById(int id)
     {
-        using var connection = new SqlConnection(
+        await using var connection = new SqlConnection(
             _configuration.GetConnectionString("DefaultConnection")
         );
-        connection.Open();
+        await connection.OpenAsync();
 
-        using var command = new SqlCommand($"SELECT * FROM Warehouse WHERE IdWarehouse = {id}", connection);
-        var warehouse = command.ExecuteReader();
+        await using var command = new SqlCommand($"SELECT * FROM Warehouse WHERE IdWarehouse = {id}", connection);
+        await using var warehouse = await command.ExecuteReaderAsync();
 
         return warehouse.HasRows;
     }

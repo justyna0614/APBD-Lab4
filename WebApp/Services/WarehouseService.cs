@@ -23,9 +23,9 @@ public class WarehouseService : IWarehouseService
         _orderService = orderService;
     }
 
-    public async Task <ProductWarehouse?> AddStock(RegisterProductInWarehouseRequestDTO request)
+    public async Task<ProductWarehouse?> AddStock(RegisterProductInWarehouseRequestDTO request)
     {
-        if (_warehouseRepository.ExistById(request.IdWarehouse) == false)
+        if (await _warehouseRepository.ExistById(request.IdWarehouse) == false)
             throw new WarehouseNotFoundException($"Warehouse with id: {request.IdWarehouse} could not be found");
 
         if (await _productRepository.FetchProductByIdAsync(request.IdProduct) == null)
@@ -62,10 +62,4 @@ public class WarehouseService : IWarehouseService
         warehouseProduct.IdProductWarehouse = id.Value;
         return warehouseProduct;
     }
-
-    // public ProductWarehouse? AddStockWithProcedure(RegisterProductInWarehouseRequestDTO request)
-    // {
-    //     
-    // }
-
 }

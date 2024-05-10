@@ -1,5 +1,4 @@
 using System.Data.SqlClient;
-using WebApp.DTO;
 using WebApp.Models;
 
 namespace WebApp.Repositories;
@@ -26,13 +25,12 @@ public class OrderRepository : IOrderRepository
         var query =
             "SELECT * FROM [Order] WHERE IdProduct = @productId AND Amount = @amount AND CreatedAt < @createdAt AND FulfilledAt IS NULL";
         await using var command = new SqlCommand(query, connection);
-
         command.Transaction = (SqlTransaction)transaction;
-        command.Parameters.AddWithValue("@productId", idProduct); // Czy tak jest poprawnie?
-        command.Parameters.AddWithValue("@amount", amount); // Czy tak jest poprawnie?
-        command.Parameters.AddWithValue("@createdAt", createdAt); // Czy tak jest poprawnie?
+        command.Parameters.AddWithValue("@productId", idProduct);
+        command.Parameters.AddWithValue("@amount", amount);
+        command.Parameters.AddWithValue("@createdAt", createdAt);
 
-        var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync();
         var order = new Order();
 
 
@@ -50,15 +48,15 @@ public class OrderRepository : IOrderRepository
     }
     
 
-    public bool UpdateOrderFulfilledAt(int orderId, DateTime fulfilledAt)
+    public async Task<bool> UpdateOrderFulfilledAtAsync(int orderId, DateTime fulfilledAt)
     {
-        using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        connection.Open();
+        await using var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await connection.OpenAsync();
 
-        using var command = new SqlCommand($"UPDATE [Order] SET FulfilledAt = @FulfilledAt WHERE IdOrder = {orderId}", connection);
+        await using var command = new SqlCommand($"UPDATE [Order] SET FulfilledAt = @FulfilledAt WHERE IdOrder = {orderId}", connection);
         command.Parameters.AddWithValue("@FulfilledAt", fulfilledAt);
 
-        var updated = command.ExecuteNonQuery();
+        var updated = await command.ExecuteNonQueryAsync();
         return updated > 0;
     }
 }

@@ -1,6 +1,9 @@
+using System.Data;
+using System.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 using WebApp.DTO;
 using WebApp.Exceptions;
+using WebApp.Models;
 using WebApp.Services;
 
 namespace WebApp.Controllers;
@@ -18,7 +21,8 @@ public class WarehouseController : ControllerBase
     }
 
     [HttpPost]
-    public async Task <IActionResult> RegisterProductInWarehouse([FromBody] RegisterProductInWarehouseRequestDTO registerProductInWarehouseRequestDto)
+    public async Task<IActionResult> RegisterProductInWarehouseAsync(
+        [FromBody] RegisterProductInWarehouseRequestDTO registerProductInWarehouseRequestDto)
     {
         if (!ModelState.IsValid)
         {
@@ -57,5 +61,39 @@ public class WarehouseController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
         }
     }
-    
+
+
+    [HttpPost("procedure")]
+    public async Task<IActionResult> RegisterProductInWarehouseWithProcedureAsync(
+        [FromBody] RegisterProductInWarehouseRequestDTO registerProductInWarehouseRequestDto)
+    {
+        var idProduct = new SqlParameter("@IdProduct", registerProductInWarehouseRequestDto.IdProduct);
+        var idWarehouse = new SqlParameter("@IdWarehouse", registerProductInWarehouseRequestDto.IdWarehouse);
+        var amount = new SqlParameter("@Amount", registerProductInWarehouseRequestDto.Amount);
+        var createdAt = new SqlParameter("@CreatedAt", DateTime.UtcNow);
+
+        await using var connection =
+            new SqlConnection("Server=localhost,1433;Database=Warehouse;User=SA;Password=admin123!;TrustServerCertificate=True");
+        await using var command = new SqlCommand("AddProductToWarehouse", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.Add(idProduct);
+        command.Parameters.Add(idWarehouse);
+        command.Parameters.Add(amount);
+        command.Parameters.Add(createdAt);
+
+        await connection.OpenAsync();
+        var result = new ProductWarehouse();
+        await using (var dr = await command.ExecuteReaderAsync())
+        {
+            if (await dr.ReadAsync())
+            {
+                result.IdProductWarehouse = (int)dr["IdProductWarehouse"];
+                return StatusCode(StatusCodes.Status200OK, new RegisterProductInWarehouseResponseDTO(result.IdProductWarehouse));
+            }
+        }
+
+        return StatusCode(StatusCodes.Status500InternalServerError, "Error while adding product to warehouse");
+    }
 }

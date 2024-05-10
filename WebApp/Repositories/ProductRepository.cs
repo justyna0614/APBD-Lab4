@@ -17,11 +17,10 @@ public class ProductRepository : IProductRepository
          await using var connection = new SqlConnection(
             _configuration.GetConnectionString("DefaultConnection")
         );
-        connection.OpenAsync();
+        await connection.OpenAsync();
 
-        var command = new SqlCommand($"SELECT * FROM Product WHERE IdProduct = {id}", connection);
-        //TO DO: Co jeśli nie znajdzie produktu o podanym Id w bazie? Tutaj wywalamy błąd?
-        var reader = await command.ExecuteReaderAsync();
+        await using var command = new SqlCommand($"SELECT * FROM Product WHERE IdProduct = {id}", connection);
+        await using var reader = await command.ExecuteReaderAsync();
         var product = new Product();
 
         if (!await reader.ReadAsync()) return null;
@@ -40,7 +39,7 @@ public class ProductRepository : IProductRepository
         await connection.OpenAsync();
 
         await using var command = new SqlCommand($"SELECT Price FROM Product WHERE IdProduct = {id}", connection);
-        var reader = await command.ExecuteReaderAsync();
+        await using var reader = await command.ExecuteReaderAsync();
         if (!await reader.ReadAsync()) return 0;
         return (decimal)reader["Price"];
     }
